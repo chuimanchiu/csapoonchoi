@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宋朝盆菜大作戰！(Poon Choi Master) - 棉紡會中學</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: #FFFDF0;
+      background-image: radial-gradient(#FDE68A 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
+    
+    .font-cute {
+      font-family: 'Mochiy Pop One', 'Noto Sans TC', sans-serif;
+    }
+
+    /* Cooking Mama Style Animations & UI */
+    @keyframes bounce-wrong {
+      0% { transform: translateX(0) scale(1); }
+      20% { transform: translateX(-15px) scale(0.95) rotate(-5deg); }
+      40% { transform: translateX(15px) scale(1.05) rotate(5deg); }
+      60% { transform: translateX(-10px) scale(0.98); }
+      80% { transform: translateX(10px) scale(1.02); }
+      100% { transform: translateX(0) scale(1); }
+    }
+
+    @keyframes pop-in {
+      0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+      70% { transform: scale(1.1) rotate(3deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    @keyframes steam-rise {
+      0% { opacity: 0; transform: translateY(0) scaleX(0.8); }
+      50% { opacity: 0.8; transform: translateY(-20px) scaleX(1.2); }
+      100% { opacity: 0; transform: translateY(-40px) scaleX(1.5); }
+    }
+
+    @keyframes gold-sparkle {
+      0%, 100% { transform: scale(0.8) rotate(0deg); opacity: 0.6; }
+      50% { transform: scale(1.3) rotate(180deg); opacity: 1; }
+    }
+
+    @keyframes mama-stamp-anim {
+      0% { transform: scale(3) rotate(-25deg); opacity: 0; }
+      70% { transform: scale(0.9) rotate(5deg); opacity: 1; }
+      85% { transform: scale(1.05) rotate(-2deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .animate-bounce-wrong {
+      animation: bounce-wrong 0.6s ease-in-out;
+    }
+
+    .animate-pop-in {
+      animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .animate-steam {
+      animation: steam-rise 2.5s infinite ease-out;
+    }
+
+    .animate-sparkle {
+      animation: gold-sparkle 1.8s infinite ease-in-out;
+    }
+
+    .animate-mama-stamp {
+      animation: mama-stamp-anim 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .layer-chip {
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .layer-chip:hover {
+      transform: translateY(-2px) scale(1.05);
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between">
+
+  <!-- Header Section -->
+  <header class="bg-amber-400 border-b-4 border-amber-600 px-4 py-3 shadow-md">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="bg-white p-2 rounded-2xl shadow border-2 border-amber-600 font-cute text-2xl text-amber-600">
+          🍲
+        </div>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-black text-amber-950 font-cute tracking-wide flex items-center gap-2">
+            宋朝盆菜大作戰！
+            <span class="text-xs bg-red-500 text-white font-sans font-bold px-2.5 py-1 rounded-full shadow">棉紡會中學中史科教材</span>
+          </h1>
+          <p class="text-xs md:text-sm text-amber-900 font-bold">按傳統圍村層次（底層 ➔ 中層 ➔ 上層）疊放正確食材！</p>
+        </div>
+      </div>
+      
+      <!-- Progress Bar, Timer & Buttons -->
+      <div class="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-end flex-wrap">
+        <!-- Timer Badge -->
+        <div class="bg-amber-900 text-amber-100 rounded-xl px-3.5 py-1.5 border-2 border-amber-950 flex items-center gap-1.5 shadow-inner font-cute text-xs">
+          <span>⏱️</span>
+          <span id="game-timer" class="tracking-wider text-sm font-black text-yellow-300">00:00</span>
+        </div>
+
+        <!-- Phase Badge -->
+        <div class="bg-white/80 rounded-xl px-3 py-1.5 border-2 border-amber-500 flex items-center gap-2 shadow-inner">
+          <span class="text-xs font-bold text-amber-900">階段：</span>
+          <span id="current-phase-badge" class="px-3 py-0.5 rounded-full text-xs font-black bg-amber-500 text-white font-cute animate-pulse">
+            ① 底層食材
+          </span>
+        </div>
+
+        <button onclick="openHistoryModal()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold px-3 py-2 rounded-xl border-2 border-amber-400 transition flex items-center gap-1">
+          📜 歷史小知識
+        </button>
+
+        <button onclick="resetGame()" class="bg-red-400 hover:bg-red-500 text-white text-xs font-bold px-3 py-2 rounded-xl border-2 border-red-600 transition flex items-center gap-1 shadow">
+          🔄 重置
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Game Container -->
+  <main class="max-w-6xl mx-auto w-full p-3 md:p-6 flex-grow grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+    
+    <!-- LEFT PANEL: Large Wooden Basin Cutaway (7 Columns) -->
+    <section class="md:col-span-7 bg-white rounded-3xl p-5 border-4 border-amber-300 shadow-xl flex flex-col justify-between relative overflow-hidden">
+      
+      <!-- Background Decor -->
+      <div class="absolute top-2 right-2 text-6xl opacity-10 pointer-events-none font-cute">宋</div>
+      
+      <!-- Layer Guidance Header -->
+      <div class="flex items-center justify-between mb-3 bg-amber-50 p-3 rounded-2xl border-2 border-amber-200">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🎯</span>
+          <div>
+            <h2 class="text-sm font-black text-amber-900 font-cute">目標層級</h2>
+            <p id="layer-target-desc" class="text-xs text-amber-700 font-bold">請先放入【底層】：吸汁耐煮的基礎食材</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="text-xs text-slate-500 font-bold">已收集</span>
+          <span id="progress-counter" class="text-base font-black text-amber-600 font-cute block">0 / 11</span>
+        </div>
+      </div>
+
+      <!-- Cross-Section Basin Container -->
+      <div id="basin-drop-zone" 
+           ondragover="handleDragOver(event)" 
+           ondrop="handleDrop(event)"
+           class="relative w-full py-4 px-2 flex flex-col items-center justify-center transition-all duration-300">
+        
+        <!-- Cross-Section SVG Canvas Design -->
+        <div class="relative w-full max-w-[460px] aspect-[4/3] flex flex-col justify-end items-center">
+          
+          <!-- Cooking Mama Victory Celebration Effects Layer -->
+          <div id="victory-effects" class="hidden absolute inset-0 z-30 pointer-events-none flex flex-col items-center justify-center">
+            <!-- Steam Particles -->
+            <div class="absolute top-4 left-1/4 text-2xl animate-steam">💨</div>
+            <div class="absolute top-8 left-1/2 text-3xl animate-steam" style="animation-delay: 0.5s;">💨</div>
+            <div class="absolute top-2 right-1/4 text-2xl animate-steam" style="animation-delay: 1s;">💨</div>
+            <!-- Sparkles -->
+            <div class="absolute top-6 left-10 text-3xl animate-sparkle">✨</div>
+            <div class="absolute top-12 right-12 text-3xl animate-sparkle" style="animation-delay: 0.7s;">⭐</div>
+            <div class="absolute bottom-20 left-16 text-3xl animate-sparkle" style="animation-delay: 0.3s;">✨</div>
+
+            <!-- Cooking Mama Victory Stamp with Completion Time -->
+            <div class="animate-mama-stamp bg-gradient-to-r from-red-500 via-pink-500 to-amber-500 text-white font-black font-cute text-2xl md:text-3xl px-6 py-3 rounded-3xl border-4 border-yellow-300 shadow-2xl rotate-[-6deg] text-center border-dashed">
+              🏆 美味極至！<br>
+              <span class="text-sm md:text-base font-sans font-bold block mt-1">帝王級圍村傳統盆菜完成！</span>
+              <span id="final-time-badge" class="text-xs md:text-sm font-sans font-black bg-white/25 px-3 py-1 rounded-full mt-2 inline-block border border-yellow-200">
+                ⏱️ 完成總用時：00分00秒
+              </span>
+            </div>
+          </div>
+
+          <!-- Wooden Basin Outer Frame SVG Cutaway -->
+          <svg viewBox="0 0 400 300" class="w-full h-full drop-shadow-2xl">
+            <!-- Basin Back/Inside Cutaway Fill -->
+            <path d="M 30,30 L 370,30 L 320,280 L 80,280 Z" fill="#78350F" opacity="0.15" />
+            
+            <!-- Horizontal Layer Dividers -->
+            <line x1="42" y1="110" x2="358" y2="110" stroke="#D97706" stroke-width="2" stroke-dasharray="6,6" opacity="0.4" />
+            <line x1="56" y1="195" x2="344" y2="195" stroke="#D97706" stroke-width="2" stroke-dasharray="6,6" opacity="0.4" />
+
+            <!-- Basin Side Walls Cutaway Frame -->
+            <polygon points="15,20 35,20 85,285 65,285" fill="#92400E" stroke="#451A03" stroke-width="3" />
+            <polygon points="365,20 385,20 335,285 315,285" fill="#92400E" stroke="#451A03" stroke-width="3" />
+            <polygon points="65,275 335,275 325,295 75,295" fill="#78350F" stroke="#451A03" stroke-width="3" />
+
+            <!-- Metal Hoops (圍村箍) -->
+            <path d="M 23,80 L 377,80 L 375,92 L 25,92 Z" fill="#F59E0B" stroke="#B45309" stroke-width="1.5" />
+            <circle cx="40" cy="86" r="2.5" fill="#451A03" />
+            <circle cx="360" cy="86" r="2.5" fill="#451A03" />
+            <path d="M 52,210 L 348,210 L 345,222 L 55,222 Z" fill="#F59E0B" stroke="#B45309" stroke-width="1.5" />
+            <circle cx="70" cy="216" r="2.5" fill="#451A03" />
+            <circle cx="330" cy="216" r="2.5" fill="#451A03" />
+          </svg>
+
+          <!-- Interactive Layers Overlay Container inside Cutaway -->
+          <div class="absolute inset-x-8 top-6 bottom-5 flex flex-col justify-between p-2 pointer-events-none">
+            
+            <!-- TOP LAYER CONTAINER -->
+            <div id="top-layer-container" class="h-1/3 w-full border-2 border-amber-400/30 rounded-2xl bg-amber-500/5 p-2 flex flex-wrap items-center justify-center gap-2 content-center relative">
+              <span class="absolute right-2 top-1 text-[10px] font-black text-amber-700/60 font-cute bg-amber-100 px-2 py-0.5 rounded-full">上層 (招牌)</span>
+            </div>
+
+            <!-- MIDDLE LAYER CONTAINER -->
+            <div id="middle-layer-container" class="h-1/3 w-full border-2 border-amber-400/30 rounded-2xl bg-amber-600/5 p-2 flex flex-wrap items-center justify-center gap-2 content-center relative">
+              <span class="absolute right-2 top-1 text-[10px] font-black text-amber-700/60 font-cute bg-amber-100 px-2 py-0.5 rounded-full">中層 (吸味)</span>
+            </div>
+
+            <!-- BOTTOM LAYER CONTAINER -->
+            <div id="bottom-layer-container" class="h-1/3 w-full border-2 border-amber-400/30 rounded-2xl bg-amber-700/5 p-2 flex flex-wrap items-center justify-center gap-2 content-center relative">
+              <span class="absolute right-2 top-1 text-[10px] font-black text-amber-700/60 font-cute bg-amber-100 px-2 py-0.5 rounded-full">底層 (吸汁)</span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Dialogue / Feedback Banner (Cooking Mama Style) -->
+      <div id="feedback-card" class="mt-4 bg-amber-100 rounded-2xl p-4 border-2 border-amber-300 flex items-start gap-3 shadow-inner">
+        <div class="text-3xl bg-white p-2 rounded-2xl shadow border border-amber-200 shrink-0 font-cute">
+          👩‍🍳
+        </div>
+        <div>
+          <h3 id="feedback-title" class="text-sm font-black text-amber-900 font-cute">圍村大廚提醒：</h3>
+          <p id="feedback-text" class="text-xs text-amber-800 font-bold leading-relaxed mt-0.5">
+            歡迎來到宋朝！請先把【底層】吸汁耐煮的基礎食材放入大木盆中！
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT PANEL: Ingredient Pantry (5 Columns) -->
+    <section class="md:col-span-5 bg-white rounded-3xl p-5 border-4 border-amber-300 shadow-xl flex flex-col">
+      <div class="flex items-center justify-between mb-3 border-b-2 border-amber-100 pb-2">
+        <h2 class="text-base font-black text-amber-950 font-cute flex items-center gap-2">
+          <span>🧺</span> 備選食材庫
+        </h2>
+        <span class="text-[11px] text-amber-600 font-bold bg-amber-50 px-2 py-1 rounded-lg">點擊或拖拽食材放入木盆</span>
+      </div>
+
+      <!-- Ingredient Grid -->
+      <div id="ingredients-grid" class="grid grid-cols-2 gap-2.5 overflow-y-auto max-h-[520px] p-1">
+        <!-- Dynamic rendering via JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Knowledge Modal (History & Lore) -->
+  <div id="history-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-6 border-4 border-amber-400 shadow-2xl relative animate-pop-in">
+      <button onclick="closeHistoryModal()" class="absolute top-4 right-4 bg-amber-100 hover:bg-amber-200 text-amber-900 w-8 h-8 rounded-full font-black flex items-center justify-center">✕</button>
+      
+      <div class="flex items-center gap-3 mb-4">
+        <div class="text-3xl">📜</div>
+        <div>
+          <h2 class="text-xl font-black text-amber-900 font-cute">棉紡會中學中史知識：宋末帝與盆菜傳說</h2>
+          <p class="text-xs text-amber-600 font-bold">棉紡會中學初中中國歷史科（宋元時期與香港）探究</p>
+        </div>
+      </div>
+
+      <div class="text-xs text-slate-700 leading-relaxed space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+        <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200">
+          <h3 class="font-black text-amber-900 mb-1">👑 傳說由來：宋帝昺南逃香港</h3>
+          <p>南宋末年（公元1278年），元軍南下，宋帝昺與大臣陸秀夫等南逃至香港新界（官富場及九龍城一帶）。據新界圍村傳說，鄉民得知皇帝駕到，希望能設宴招待，但倉卒間缺乏體面的名貴皿具，便以木盆盛載村內現有的朴素食材，層層疊好獻給皇帝，演變為後來的「盆菜」。</p>
+        </div>
+
+        <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200">
+          <h3 class="font-black text-amber-900 mb-1">🥩 新界圍村傳統盆菜的真正面貌</h3>
+          <p>歷史文獻與新界圍村（如屏山、上水圍）長者記憶顯示，傳統盆菜的核心是<strong>燜豬肉</strong>。傳統做法並無鮑魚、海參等奢華海味：</p>
+          <ul class="list-disc list-inside mt-1 space-y-1 text-slate-800">
+            <li><strong>底層：</strong>蘿蔔、枝竹、豆腐乾（吸汁耐煮）</li>
+            <li><strong>中層：</strong>豬皮、魷魚、門鱔乾、冬菇（吸味彈牙）</li>
+            <li><strong>上層：</strong>南乳燜腩肉、切雞、煎蝦、魚蛋（體面招牌）</li>
+          </ul>
+        </div>
+
+        <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200">
+          <h3 class="font-black text-amber-900 mb-1">💡 結論：歷史傳說與現代演變</h3>
+          <p>「宋代盆菜」實質上是運用南宋逃難的故事包裝，背後核心是新界圍村數百年傳承下來的朴素食材與分層智慧。現代酒樓加入鮑魚、海參等奢華食材，屬於商業演變，而非傳統宋代/圍村原貌。</p>
+        </div>
+      </div>
+
+      <div class="mt-5 text-center">
+        <button onclick="closeHistoryModal()" class="bg-amber-500 hover:bg-amber-600 text-white font-black font-cute px-6 py-2.5 rounded-2xl shadow border-2 border-amber-600">
+          明白！繼續遊戲
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Section -->
+  <footer class="bg-amber-100 border-t-2 border-amber-200 text-center py-3 text-xs text-amber-800 font-bold">
+    棉紡會中學初中中國歷史科 互動輔助教學模組 | 圍村傳統文化與宋代傳說探究
+  </footer>
+
+  <!-- Game Logic Script -->
+  <script>
+    // Audio Synthesizer (Web Audio API)
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new AudioContext();
+      }
+    }
+
+    function playSuccessSound() {
+      initAudio();
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.25);
+    }
+
+    function playErrorSound() {
+      initAudio();
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.25);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    function playFanfareSound() {
+      initAudio();
+      if (!audioCtx) return;
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.12);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime + idx * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.12 + 0.3);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + idx * 0.12);
+        osc.stop(audioCtx.currentTime + idx * 0.12 + 0.3);
+      });
+    }
+
+    // Ingredients Master Database
+    const INGREDIENTS = [
+      // Bottom Layer (底層)
+      { id: 'radish', name: '白蘿蔔', layer: 'bottom', icon: '🥕', desc: '底層核心：吸盡上層肉汁精華，耐煮透味！' },
+      { id: 'beancurd_sticks', name: '枝竹', layer: 'bottom', icon: '🥢', desc: '底層必備：鋪底吸收濃郁湯汁。' },
+      { id: 'tofu_dry', name: '豆腐乾', layer: 'bottom', icon: '🧊', desc: '底層傳統食材：扎實且極易吸收精華。' },
+
+      // Middle Layer (中層)
+      { id: 'pig_skin', name: '豬皮', layer: 'middle', icon: '🥓', desc: '中層精髓：蜂窩結構充分吸味，口感爽彈。' },
+      { id: 'squid', name: '魷魚', layer: 'middle', icon: '🦑', desc: '中層食材：土魷香氣提升整盆鮮味。' },
+      { id: 'eel_dry', name: '門鱔乾', layer: 'middle', icon: '🐟', desc: '圍村特色：門鱔乾帶來獨特九龍/新界海味香氣。' },
+      { id: 'shiitake', name: '冬菇', layer: 'middle', icon: '🍄', desc: '中層靈魂：香氣濃郁，承上啟下。' },
+
+      // Top Layer (上層)
+      { id: 'braised_pork', name: '南乳燜腩肉', layer: 'top', icon: '🍖', desc: '上層核心！圍村盆菜靈魂，汁液向下滲透。' },
+      { id: 'chicken', name: '切雞', layer: 'top', icon: '🍗', desc: '上層招牌：象徵吉祥體面。' },
+      { id: 'prawn', name: '煎蝦', layer: 'top', icon: '🦐', desc: '上層鮮味：色澤紅潤，代表歡歡喜喜。' },
+      { id: 'fishball', name: '魚蛋/肉丸', layer: 'top', icon: '🍡', desc: '上層頂部：團團圓圓，體面賣相。' },
+
+      // Modern Distractors
+      { id: 'abalone', name: '鮑魚', layer: 'distractor', icon: '🦪', desc: '非傳統！鮑魚是現代酒樓商業化的奢華食材，宋代圍村並無此物。' },
+      { id: 'sea_cucumber', name: '海參', layer: 'distractor', icon: '🥒', desc: '非傳統！海參為後人加入的名貴海味，非原初朴素盆菜內容。' },
+      { id: 'cheese', name: '芝士', layer: 'distractor', icon: '🧀', desc: '錯啦！古代新界圍村可沒有西方芝士！' },
+      { id: 'wagyu', name: '和牛', layer: 'distractor', icon: '🥩', desc: '錯啦！圍村傳統講的是燜豬肉，並非和牛！' },
+      { id: 'french_fries', name: '薯條', layer: 'distractor', icon: '🍟', desc: '現代西式快餐，完全脫離中史背景！' }
+    ];
+
+    // Game State & Timer
+    let currentPhase = 'bottom';
+    let addedIngredients = new Set();
+    let secondsElapsed = 0;
+    let timerInterval = null;
+
+    // DOM Elements
+    const ingredientsGrid = document.getElementById('ingredients-grid');
+    const bottomContainer = document.getElementById('bottom-layer-container');
+    const middleContainer = document.getElementById('middle-layer-container');
+    const topContainer = document.getElementById('top-layer-container');
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackText = document.getElementById('feedback-text');
+    const currentPhaseBadge = document.getElementById('current-phase-badge');
+    const layerTargetDesc = document.getElementById('layer-target-desc');
+    const progressCounter = document.getElementById('progress-counter');
+    const victoryEffects = document.getElementById('victory-effects');
+    const historyModal = document.getElementById('history-modal');
+    const gameTimerDisplay = document.getElementById('game-timer');
+    const finalTimeBadge = document.getElementById('final-time-badge');
+
+    // Timer Functions
+    function startTimer() {
+      stopTimer();
+      secondsElapsed = 0;
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+      const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+      gameTimerDisplay.innerText = `${mins}:${secs}`;
+    }
+
+    function getFormattedTimeText() {
+      const mins = Math.floor(secondsElapsed / 60);
+      const secs = secondsElapsed % 60;
+      if (mins > 0) {
+        return `${mins}分${secs}秒`;
+      }
+      return `${secs}秒`;
+    }
+
+    // Initialize Game
+    function initGame() {
+      currentPhase = 'bottom';
+      addedIngredients.clear();
+      victoryEffects.classList.add('hidden');
+      
+      bottomContainer.innerHTML = '<span class="absolute right-2 top-1 text-[10px] font-black text-amber-700/60 font-cute bg-amber-100 px-2 py-0.5 rounded-full">底層 (吸汁)</span>';
+      middleContainer.innerHTML = '<span class="absolute right-2 top-1 text-[10px] font-black text-amber-700/60 font-cute bg-amber-100 px-2 py-0.5 rounded-full">中層 (吸味)</span>';
+      topContainer.innerHTML = '<span class="absolute right-2 top-1 text-[10px] font-black text-amber-700/60 font-cute bg-amber-100 px-2 py-0.5 rounded-full">上層 (招牌)</span>';
+
+      startTimer();
+      updateUI();
+      renderIngredients();
+    }
+
+    // Render Pantry Cards
+    function renderIngredients() {
+      ingredientsGrid.innerHTML = '';
+      const shuffled = [...INGREDIENTS].sort(() => Math.random() - 0.5);
+
+      shuffled.forEach(item => {
+        const isAdded = addedIngredients.has(item.id);
+        const card = document.createElement('div');
+        card.id = `card-${item.id}`;
+        card.draggable = !isAdded;
+        card.setAttribute('ondragstart', `handleDragStart(event, '${item.id}')`);
+        card.setAttribute('onclick', `selectIngredient('${item.id}')`);
+
+        card.className = `p-3 rounded-2xl border-2 transition cursor-pointer select-none flex flex-col items-center justify-between text-center ${
+          isAdded 
+            ? 'bg-slate-100 border-slate-300 opacity-40 cursor-not-allowed scale-95' 
+            : 'bg-amber-50/80 hover:bg-amber-100 border-amber-300 hover:border-amber-400 shadow-sm hover:shadow-md hover:-translate-y-0.5'
+        }`;
+
+        card.innerHTML = `
+          <div class="text-3xl mb-1">${item.icon}</div>
+          <div class="text-xs font-black text-amber-950 font-cute">${item.name}</div>
+          <div class="text-[10px] text-amber-700 font-bold mt-1 bg-amber-200/50 px-2 py-0.5 rounded-full">
+            ${isAdded ? '已放入' : '點擊 / 拖拽'}
+          </div>
+        `;
+
+        ingredientsGrid.appendChild(card);
+      });
+    }
+
+    // Handle Drag and Drop
+    function handleDragStart(e, id) {
+      e.dataTransfer.setData('text/plain', id);
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      const id = e.dataTransfer.getData('text/plain');
+      if (id) {
+        selectIngredient(id);
+      }
+    }
+
+    // Core Game Logic for Selecting Ingredient
+    function selectIngredient(id) {
+      if (currentPhase === 'completed') return;
+
+      const item = INGREDIENTS.find(i => i.id === id);
+      if (!item || addedIngredients.has(id)) return;
+
+      const cardEl = document.getElementById(`card-${id}`);
+
+      // Check Layer Validation
+      if (item.layer === currentPhase) {
+        // CORRECT CHOICE
+        playSuccessSound();
+        addedIngredients.add(id);
+
+        addChipToBasin(item);
+
+        feedbackTitle.innerText = `✨ 放對了！${item.name}`;
+        feedbackText.innerText = item.desc;
+
+        checkPhaseProgression();
+        renderIngredients();
+
+      } else {
+        // INCORRECT CHOICE
+        playErrorSound();
+        
+        if (cardEl) {
+          cardEl.classList.add('animate-bounce-wrong');
+          setTimeout(() => cardEl.classList.remove('animate-bounce-wrong'), 600);
+        }
+
+        feedbackTitle.innerText = `❌ 彈走！不適合放入【${getPhaseName(currentPhase)}】`;
+
+        if (item.layer === 'distractor') {
+          feedbackText.innerText = `${item.desc}`;
+        } else {
+          feedbackText.innerText = `【${item.name}】屬於【${getPhaseName(item.layer)}】，請先按順序填滿目前的【${getPhaseName(currentPhase)}】！`;
+        }
+      }
+    }
+
+    // Add Ingredient Chip to Wooden Basin Layer (放大圖片圖示，保留文字)
+    function addChipToBasin(item) {
+      const chip = document.createElement('div');
+      chip.className = 'layer-chip bg-amber-100 text-amber-950 border-2 border-amber-400 font-black font-cute px-2.5 py-1 rounded-2xl flex items-center gap-1.5 animate-pop-in pointer-events-auto shadow-md';
+      
+      // 放大圖案至 text-2xl/3xl
+      chip.innerHTML = `<span class="text-2xl md:text-3xl leading-none filter drop-shadow-sm">${item.icon}</span> <span class="text-xs md:text-sm">${item.name}</span>`;
+
+      if (item.layer === 'bottom') {
+        bottomContainer.appendChild(chip);
+      } else if (item.layer === 'middle') {
+        middleContainer.appendChild(chip);
+      } else if (item.layer === 'top') {
+        topContainer.appendChild(chip);
+      }
+    }
+
+    // Phase Progression Check
+    function checkPhaseProgression() {
+      const bottomItems = INGREDIENTS.filter(i => i.layer === 'bottom').map(i => i.id);
+      const middleItems = INGREDIENTS.filter(i => i.layer === 'middle').map(i => i.id);
+      const topItems = INGREDIENTS.filter(i => i.layer === 'top').map(i => i.id);
+
+      const hasAllBottom = bottomItems.every(id => addedIngredients.has(id));
+      const hasAllMiddle = middleItems.every(id => addedIngredients.has(id));
+      const hasAllTop = topItems.every(id => addedIngredients.has(id));
+
+      if (currentPhase === 'bottom' && hasAllBottom) {
+        currentPhase = 'middle';
+        feedbackTitle.innerText = '🎉 底層完成！進入【中層】';
+        feedbackText.innerText = '太棒了！底層吸汁食材已鋪滿。現在請放入中層（吸味彈牙）的食材！';
+      } else if (currentPhase === 'middle' && hasAllMiddle) {
+        currentPhase = 'top';
+        feedbackTitle.innerText = '🎉 中層完成！進入【上層】';
+        feedbackText.innerText = '非常好！中層已鋪好。最後請放入上層最體面的招牌食材！';
+      } else if (currentPhase === 'top' && hasAllTop) {
+        currentPhase = 'completed';
+        triggerVictory();
+      }
+
+      updateUI();
+    }
+
+    function getPhaseName(phase) {
+      switch(phase) {
+        case 'bottom': return '底層';
+        case 'middle': return '中層';
+        case 'top': return '上層';
+        default: return '';
+      }
+    }
+
+    function updateUI() {
+      const totalTraditional = INGREDIENTS.filter(i => i.layer !== 'distractor').length;
+      progressCounter.innerText = `${addedIngredients.size} / ${totalTraditional}`;
+
+      if (currentPhase === 'bottom') {
+        currentPhaseBadge.innerText = '① 底層食材';
+        layerTargetDesc.innerText = '請先放入【底層】：吸汁耐煮的基礎食材';
+      } else if (currentPhase === 'middle') {
+        currentPhaseBadge.innerText = '② 中層食材';
+        layerTargetDesc.innerText = '請放入【中層】：吸味彈牙的食材';
+      } else if (currentPhase === 'top') {
+        currentPhaseBadge.innerText = '③ 上層食材';
+        layerTargetDesc.innerText = '最後放入【上層】：體面招牌的核心食材';
+      } else if (currentPhase === 'completed') {
+        currentPhaseBadge.innerText = '🏆 美味大成功！';
+        currentPhaseBadge.className = 'px-3 py-0.5 rounded-full text-xs font-black bg-red-500 text-white font-cute';
+        layerTargetDesc.innerText = '恭喜！傳統圍村帝王級盆菜已完美疊放完成！';
+      }
+    }
+
+    // Victory Celebration Effect
+    function triggerVictory() {
+      stopTimer();
+      const formattedTime = getFormattedTimeText();
+
+      playFanfareSound();
+      finalTimeBadge.innerText = `⏱️ 完成總用時：${formattedTime}`;
+      victoryEffects.classList.remove('hidden');
+
+      feedbackTitle.innerText = `🍲 帝王級圍村傳統盆菜大成功！（用時：${formattedTime}）`;
+      feedbackText.innerText = `恭喜你！你以 ${formattedTime} 的成績完整掌握了香港新界圍村傳統盆菜的層次邏輯與宋末帝南逃歷史傳說。點擊右上角「📜 歷史小知識」可查看詳細中史考證！`;
+
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 120,
+          spread: 80,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+
+    function openHistoryModal() {
+      historyModal.classList.remove('hidden');
+    }
+
+    function closeHistoryModal() {
+      historyModal.classList.add('hidden');
+    }
+
+    function resetGame() {
+      initGame();
+      feedbackTitle.innerText = '圍村大廚提醒：';
+      feedbackText.innerText = '遊戲已重置！請按照【底層 ➔ 中層 ➔ 上層】的傳統順序重新放入食材！';
+    }
+
+    // Run on Mount
+    window.addEventListener('DOMContentLoaded', () => {
+      initGame();
+    });
+  </script>
+</body>
+</html>
